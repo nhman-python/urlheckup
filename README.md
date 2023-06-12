@@ -1,8 +1,10 @@
 בודק קישורים ומחזיר את הקישור האחרון
 הורדת הסקריפט
 ודאו שגיט מותקן אצלכם
+על ידי הרצת הפקודה הזאת (לינוקס)
 
 ```sudo apt install git```
+
 הורידו את המאגר
 ```
 git clone https://github.com/nhman-python/urlheckup.git
