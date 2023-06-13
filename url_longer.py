@@ -30,7 +30,11 @@ async def get_redirect_info(session_data, short_url):
         if not short_url.startswith('https://'):
             raise ValueError('רק כתובות HTTPS מותרות.')
 
-        async with session_data.get(short_url, allow_redirects=True, timeout=10) as response:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+        async with session_data.get(short_url, allow_redirects=True, timeout=10, headers=headers) as response:
             redirect_info = []
 
             for redirect_history in response.history:
@@ -50,7 +54,7 @@ async def get_redirect_info(session_data, short_url):
             'error': str(e)
         }
         return [error_info]
-    except aiohttp.ClientConnectorError as e:
+    except aiohttp.ClientConnectorError:
         error_info = {
             'error': 'יצירת חיבור נכשלה או ש-HTTPS אינו נתמך על ידי השרת.'
         }
