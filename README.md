@@ -20,7 +20,7 @@ pip install requirements.txt
 python3 url_longer.py
 ```
 
-# האתר הרשמי שלי
+# הסקריפט באתר שלי
 ```
 https://urlheckup.vercel.app/
 ```
