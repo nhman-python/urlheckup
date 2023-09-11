@@ -1,15 +1,21 @@
 import asyncio
+import datetime
 import os
 import httpx
-from flask import Flask, render_template, flash, redirect, request, url_for
+from flask import Flask, flash, redirect, request, url_for, render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import InputRequired, URL
-import logging
+import pytz
+from markupsafe import Markup
 
-logging.basicConfig(filemode='a', filename='log-redict.log')
 app = Flask(__name__)
 app.secret_key = os.urandom(40)
+
+
+def year_now():
+    tz = pytz.timezone('Asia/Jerusalem')
+    return datetime.datetime.now(tz=tz).year
 
 
 async def redirect_history(url, ):
@@ -29,14 +35,13 @@ async def redirect_history(url, ):
     except (httpx.ConnectError, httpx.ConnectTimeout, httpx.HTTPError):
         return None
     except Exception as e:
-        logging.error(f'error: {e}')
         return None
     return redirect_urls
 
 
 class UrlForm(FlaskForm):
-    url = StringField('URL', validators=[InputRequired(), URL(message="Invalid URL")])
-    submit = SubmitField('Submit')
+    url = StringField('URL:', validators=[InputRequired(), URL(message="Invalid URL")])
+    submit = SubmitField('סריקה')
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -48,18 +53,23 @@ def index():
             redirect_result = asyncio.run(redirect_history(url))
 
             if redirect_result is None:
-                flash('An error occurred. Please check the URL and try again.', 'danger')
+                flash('התרחשה שגיאה. אנא בדוק את כתובת האתר ונסה שוב.', 'danger')
                 return redirect(url_for('index'))
             elif not redirect_result:
-                flash('Error: The URL is not accessible. Please try a different one.', 'danger')
+                flash('שגיאה: כתובת האתר אינה נגישה. אנא נסה כתובת אחרת.', 'danger')
                 return redirect(url_for('index'))
             else:
-                flash('Success: Here is the redirect history', 'success')
-                return render_template('index.html', form=form, redirect=redirect_result)
+                for item in redirect_result:
+                    flash(Markup(
+                        f'<br>:קוד מצב {item["status code"]}<br>'
+                        f'נתיב:<a href="{item["url path"]}" class="btn btn-link leave-site-link" data-toggle="modal" data-target="#leaveSiteModal">{item["url path"]}</a>'),
+                        'success')
+
+                return redirect(url_for('index'))
         else:
-            flash('Invalid URL. Please provide a valid one, for example, "https://example.com".', 'danger')
+            flash('כתובת אתר לא חוקית. אנא ספק כתובת חוקית, לדוגמא, "https://example.com".', 'danger')
             return redirect(url_for('index'))
-    return render_template('index.html', form=form)
+    return render_template('index.html', form=form, year=year_now())
 
 
 if __name__ == '__main__':
