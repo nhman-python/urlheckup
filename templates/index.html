@@ -1,104 +1,145 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirect History</title>
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-
+    <title>היסטוריית הפניות</title>
+    <!-- Include Bootstrap JS via external Bootstrap CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Include Google Fonts - Heebo -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700&display=swap">
+    <!-- Include Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <style>
         body {
-            background-color: black;
-            color: limegreen;
+            background-color: white;
+            color: black;
+            font-family: 'Heebo', sans-serif;
+            font-size: 24px; /* Increase the base font size */
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            direction: rtl;
         }
-
-        .container {
-            text-align: center;
+        h1 {
+            font-size: 36px; /* Increase the h1 font size */
         }
-
-        .alert {
-            background-color: rgba(0, 0, 0, 0.8);
-            border-color: limegreen;
-            color: limegreen;
-        }
-
         .form-control {
-            background-color: rgba(0, 0, 0, 0.8);
-            color: limegreen;
-            border-color: limegreen;
+            font-size: 24px; /* Increase the form control font size */
+            transition: border-color 0.3s ease-in-out;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+        }
+        .form-control-error {
+            border-color: #dc3545 !important;
+            animation: shake 0.5s ease-in-out;
         }
 
-        .btn-primary {
-            background-color: limegreen;
-            border-color: limegreen;
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(10px); }
+            50% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+
+        .btn {
+            font-size: 24px; /* Increase the button font size */
+        }
+        .navbar {
+            font-size: 24px; /* Increase the navbar font size */
+        }
+        .alert {
+            font-size: 24px; /* Increase the alert font size */
+        }
+        .navbar-text {
+            font-size: 24px; /* Increase the navbar text font size */
         }
     </style>
 </head>
 <body>
-<div class="container mt-5">
-    <h1>Redirect History</h1>
+<!-- סרגל ניווט Bootstrap עליון -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="https://github.com/nhman-python" target="_blank" rel="noopener noreferrer">
+            GitHub
+        </a>
+        <a class="navbar-brand" href="https://t.me/python_tip_israel" target="_blank" rel="noopener noreferrer">
+            Telegram
+        </a>
+    </div>
+</nav>
 
-    <form method="POST">
+<div class="container mt-5 mb-5">
+    <br>
+    <br>
+    <br>
+    <h1>היסטוריית הפניות</h1>
+    <form method="POST" onsubmit="return validateUrl()">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.url.label }}
-            {{ form.url(class="form-control") }}
+            <input type="url" class="form-control" id="url-input" name="url" required>
         </div>
-        <button type="submit" class="btn btn-primary" id="submit-button">{{ form.submit.label }}</button>
+        <!-- Add an animation class to the button -->
+        <button type="submit" class="btn btn-primary animated-button" id="submit-button">{{ form.submit.label }}</button>
     </form>
-
-    <!-- Bootstrap loading spinner -->
     <div class="text-center" id="loading-container" style="display: none;">
         <div class="spinner-border text-primary" role="status"></div>
-        <p>Loading...</p>
+        <p>טוען...</p>
     </div>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
     <div class="alert alert-{{ category }} mt-3">
-        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+        <strong>{{ category.capitalize() }}:</strong> {{ message | safe }}
     </div>
     {% endfor %}
     {% endwith %}
-
-    {% if redirect %}
-    <div class="mt-3">
-        <h2>Redirect History:</h2>
-        <ul>
-            {% for item in redirect %}
-            <li>
-                <strong>Status Code:</strong> {{ item['status code'] }}<br>
-                <strong>URL Path:</strong>
-                <a href="{{ item['url path'] }}" class="btn btn-link leave-site-link">
-                    {{ item['url path'] }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
 </div>
 
+<nav class="navbar navbar-dark bg-dark fixed-bottom">
+    <div class="container justify-content-center">
+        <span class="navbar-text">
+            &copy; {{ year }} נוצר ב-&hearts; על ידי <a href="https://t.me/python_tip_israel" target="_blank" rel="noopener noreferrer">פייתון טיפ ישראל</a>
+        </span>
+    </div>
+</nav>
 <script>
     const submitButton = document.getElementById("submit-button");
     const loadingContainer = document.getElementById("loading-container");
 
-    submitButton.addEventListener("click", (event) => {
-        event.preventDefault();
+    function validateUrl() {
+        const urlInput = document.getElementById("url-input");
+        const inputUrl = urlInput.value.trim();
 
-        loadingContainer.style.display = "block";
+        try {
+            new URL(inputUrl);
+            // Remove error class if it was previously applied
+            urlInput.classList.remove("form-control-error");
 
-        setTimeout(() => {
-            document.querySelector("form").submit();
-        }, 1000);
-    });
+            // Add animation class to focus the input field
+            urlInput.classList.add("form-control-focus");
 
+            // Add animation class to the button on successful submission
+            submitButton.classList.add("animate__animated", "animate__rubberBand");
+            loadingContainer.style.display = "block";
+            setTimeout(() => {
+                document.querySelector("form").submit();
+            }, 1000);
+            return true;
+        } catch (error) {
+            // Apply error class to the input field
+            urlInput.classList.add("form-control-error");
+            alert("הכתובת שהוזנה אינה כתובת URL חוקית. נא לנסות שנית.");
+            return false;
+        }
+    }
 
     const leaveSiteLinks = document.querySelectorAll(".leave-site-link");
     leaveSiteLinks.forEach((link) => {
@@ -106,7 +147,7 @@
             event.preventDefault();
             const targetUrl = event.target.getAttribute("href");
 
-            if (confirm(`Are you sure you want to leave this site and go to the following URL?\n\n${targetUrl}`)) {
+            if (confirm(`האם אתה בטוח שברצונך לעזוב את האתר ולהמשיך לכתובת ה-URL הבאה?\n\n${targetUrl}`)) {
                 window.location.href = targetUrl;
             }
         });
