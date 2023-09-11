@@ -1,3 +1,5 @@
-Flask
-Flask-WTF
+Flask==2.2.2
 httpx
+Flask-WTF
+pytz
+markupsafe
