@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect History</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+
+    <style>
+        body {
+            background-color: black;
+            color: limegreen;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .alert {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-color: limegreen;
+            color: limegreen;
+        }
+
+        .form-control {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: limegreen;
+            border-color: limegreen;
+        }
+
+        .btn-primary {
+            background-color: limegreen;
+            border-color: limegreen;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Redirect History</h1>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.url.label }}
+            {{ form.url(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-primary" id="submit-button">{{ form.submit.label }}</button>
+    </form>
+
+    <!-- Bootstrap loading spinner -->
+    <div class="text-center" id="loading-container" style="display: none;">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Loading...</p>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} mt-3">
+        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    {% if redirect %}
+    <div class="mt-3">
+        <h2>Redirect History:</h2>
+        <ul>
+            {% for item in redirect %}
+            <li>
+                <strong>Status Code:</strong> {{ item['status code'] }}<br>
+                <strong>URL Path:</strong>
+                <a href="{{ item['url path'] }}" class="btn btn-link leave-site-link">
+                    {{ item['url path'] }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const submitButton = document.getElementById("submit-button");
+    const loadingContainer = document.getElementById("loading-container");
+
+    submitButton.addEventListener("click", (event) => {
+        event.preventDefault();
+
+        loadingContainer.style.display = "block";
+
+        setTimeout(() => {
+            document.querySelector("form").submit();
+        }, 1000);
+    });
+
+
+    const leaveSiteLinks = document.querySelectorAll(".leave-site-link");
+    leaveSiteLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
+            const targetUrl = event.target.getAttribute("href");
+
+            if (confirm(`Are you sure you want to leave this site and go to the following URL?\n\n${targetUrl}`)) {
+                window.location.href = targetUrl;
+            }
+        });
+    });
+</script>
+</body>
+</html>
