@@ -19,14 +19,13 @@ git clone https://github.com/nhman-python/urlheckup.git
 ```
 התקינו את הrequirements
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 הריצו את הקובץ
 ```
-python3 url_longer.py
+python3 index.py
 ```
 
-# הסקריפט באתר שלי
-```
+# דוגמא באתר שלי
+
 https://urlheckup.vercel.app/
-```
